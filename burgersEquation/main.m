@@ -15,14 +15,14 @@ function main()
             u0(x<=0)=1;
             u0(x>0)=0;
 
-        elseif(ch==2)
+        elseif(ch==3)
         
             T=0.5;
             u0=[];
             u0(x<=0)=-0.5;
             u0(x>0)=1;
         
-        elseif(ch==3)
+        elseif(ch==2)
         
             T=0.5;
             u0=[];
@@ -41,10 +41,10 @@ function main()
         choice = input("1.Roe's scheme \n2.Godunov's scheme");
         if(choice!=1&&choice!=2)
           disp("wrong choice!");
+          quit();
         endif;
         t=0;
-        u=u0;
-        f=f0;
+        un=u0;
         while(t<=T)
           if(t==0)
             ue=u0;
@@ -53,53 +53,65 @@ function main()
                   ue=[];
                   ue(x<=t/2)=1; %exact solution
                   ue(x>t/2)=0;                                         
-            elseif(ch==3)
+            elseif(ch==2)
                   ue=[];
                   ue(x<=0)=0;
                   ue(x>0 & x<t)=x(x>0 & x<t)/t; %exact solution
                   ue(x>=t)=1;
-            elseif(ch==2)
+            elseif(ch==3)
                   ue=[];
                   ue(x<=-t/2)=-0.5;
                   ue(x>-t/2 & x<=t)=x(x>-t/2 & x<=t)/t;
                   ue(x>t)=1;
             endif;
           endif;
-            plot(x, u, x, ue, 'LineWidth', 2)
+            plot(x, un, x, ue, 'LineWidth', 2)
             legend('Numerical', 'Exact')
             pause(0.1);
-            dt = cfl*dx/max(u);
-            t = t + dt; %incrementing t
-            if(choice==1)
-                  u= roe(u,f,cfl,N);
-            elseif(choice==2)
-                  u = godunov(u,f,cfl,N);
+            %calculating flux at faces and at time n
+            flux =[];
+            if(t==0)
+              flux = f0;
+            else
+              if(choice==1)
+                  flux = roe(un,cfl,N);
+              elseif(choice==2)
+                  flux = godunov(un,cfl,N);
+              endif;
             endif;
+
+            dt = cfl*dx/max(abs(un));
+            t = t + dt; %incrementing t
+
+            %calculating u at n+1
+            unp1 = [];
+            unp1(1) = un(1);
+            unp1(N)= un(N); %boundary values are assumed to be constant
+            unp1(N+1)=un(N+1);
+            for j=2:N-1
+              unp1(j) = un(j) - dt/dx*(flux(j+1)-flux(j));
+            endfor;
+
+            un = unp1;
 
         endwhile;
 endfunction;
-function u= roe(un,fn,cfl,N)
-                unp1 = [];
-                unp1(1)=un(1); %values at boundaries never change.
-                %fn at j+1/2 and fn at j-1/2 are subtracted and written
-		for j=2:N-1
-			unp1(j) = un(j) - cfl/max(un)*((fn(j+1)-fn(j-1))/2 - 0.5*(abs(un(j) + un(j+1))*(un(j+1)-un(j)) - abs(un(j)+un(j+1))*(un(j)-un(j-1))));
+function f= roe(un,cfl,N)
+              
+                f = [];
+                f(1)= un(1)*un(1)/2;
+		for j=1:N
+                        fj = 0.25*(un(j)*un(j) + un(j+1)*un(j+1)) - 0.5*abs(un(j) + un(j+1))*(un(j+1)-un(j));
+                        f = [f,fj];
 		endfor;
-		unp1(N)=un(N);
-                unp1(N+1)=un(N+1);
-                u = unp1;
 	        
 endfunction;
-function u = godunov(un,fn,cfl,N)
-                unp1 = [];
-                unp1(1)=un(1); %values at boundaries never change.
-                %fn at j+1/2 and fn at j-1/2 are subtracted and written
-		for j=2:N-1
-			unp1(j) = un(j) - cfl/max(un)*(max(fn(un==max(0,un(j)))(1),fn(un==min(0,un(j+1)))(1))-max(fn(un==max(0,un(j-1)))(1),fn(un==min(0,un(j+1)))(1)));
+function f = godunov(un,cfl,N)
+                
+                f= [];
+                f(1) = un(1)*un(1)/2;
+		for j=1:N
+		          fj = max(max(0,un(j))*max(0,un(j))/2 , min(0,un(j+1))*min(0,un(j+1))/2);
+                          f = [f,fj];
 		endfor;
-		unp1(N)=un(N);
-                unp1(N+1)=un(N+1);
-                u = unp1;
-	         
-                  
 endfunction;
