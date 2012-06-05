@@ -31,6 +31,7 @@ function main()
         
         else
             disp("wrong choice!");
+            quit();
         endif;    
         f0=[];
         for el = u0
