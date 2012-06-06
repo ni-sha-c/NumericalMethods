@@ -102,7 +102,11 @@ function f= roe(un,cfl,N)
                 f = [];
                 f(1)= un(1)*un(1)/2;
 		for j=1:N
-                        fj = 0.25*(un(j)*un(j) + un(j+1)*un(j+1)) - 0.5*abs(un(j) + un(j+1))*(un(j+1)-un(j));
+                        a = 0.5*(un(j) + un(j+1));
+                        if(abs(a)< abs(un(j+1)-un(j)))
+                          a = un(j+1)-un(j);
+                        endif;
+                        fj = 0.25*(un(j)*un(j) + un(j+1)*un(j+1)) - 0.5*abs(a)*(un(j+1)-un(j));
                         f = [f,fj];
 		endfor;
 	        
