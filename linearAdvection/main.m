@@ -41,13 +41,17 @@ function forward(x,u0,nu,N,Nt)
 		endfor;
 		unp1(N+2)=0;
 		if(n==Nt)
-			plot(x,unp1);
-			hold on;
+			plot(x, unp1, x, u0, 'LineWidth', 2)
+            		legend('Numerical', 'Exact')
+            		pause(0.1);
                         for j = 1:(N+2)/2
                           u0(j+50)=u(j);
                           u0(j)=0;
                         endfor;
                         plot(x,u0,'Color','r');
+                        plot(x, unp1, x, u0, 'LineWidth', 2)
+            		legend('Numerical', 'Exact')
+            		pause(0.1);
                         
 		endif;
 	endfor;
