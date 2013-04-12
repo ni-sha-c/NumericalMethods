@@ -3,10 +3,10 @@ Simple code to solve the 2D heat conduction equation over a square cavity.
 
 Set parameters in the initial few lines.
 
-To run octave(>3.4) ,
+To run on octave(>3.4) ,
 
-1) cd into directory
-2) squareCavity
+    cd directory
+    squareCavity
 
 To run on matlab, change __end*__( endfunction, endfor, endif ) etc to __end__
 
